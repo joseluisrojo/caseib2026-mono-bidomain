@@ -1,2 +1,5 @@
-# caseib2026-mono-bidomain
-Interactive companion to our CASEIB 2026 study on monodomain and bidomain cardiac models.
+# CASEIB 2026 · Monodomain / bidomain companion
+
+Open `index.html` locally, or serve this directory as a static site.
+
+[Scientific scope, data provenance and reproduction notes](README.txt).

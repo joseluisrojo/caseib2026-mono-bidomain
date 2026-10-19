@@ -1,0 +1,15 @@
+{
+  "retrieved": "2026-10-19",
+  "logo-upv.svg": {
+    "institution": "Universitat Politècnica de València",
+    "official_source": "https://www.upv.es/comu/nueva-imagen/recursos/archivos_MARCA_UPV.zip",
+    "archive_member": "MARCA_UPV/MarcaUPV_PRINCIPAL/marca_UPV_principal_color.svg",
+    "presentation": "Original principal mark, proportional scaling, white background"
+  },
+  "logo-urjc.png": {
+    "institution": "Universidad Rey Juan Carlos",
+    "source": "Existing logoURJC.pdf in the authors' poster template",
+    "presentation": "Proportional rasterization for browser display, white background"
+  },
+  "rights": "Institutional marks retain their respective owners' rights. They identify the authors' affiliations."
+}

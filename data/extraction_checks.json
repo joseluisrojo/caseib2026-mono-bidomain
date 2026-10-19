@@ -1,0 +1,17 @@
+{
+  "scope": "Saved-data extraction only",
+  "max_absolute_metric_difference": 3.469446951953614e-18,
+  "arrays_shape": [
+    6,
+    41,
+    121
+  ],
+  "no_solver_run": true,
+  "input_hashes": {
+    "matlab_result": "results/intermediate/analytic/analytic_results.mat",
+    "matlab_sha256": "54b152827b63f42d7d8749c1dc358bf97055416942b26dd1e7d492ef8b2039be",
+    "analytic_metrics_sha256": "9f31af242c6a6ed2043ed95b204d21ce8633312829e987e1adda9fc7505e3ffe",
+    "fem_metrics_sha256": "a71622b00a2283e8647f4236c1b8246985758c36411c34f6180400c8f5927ae2",
+    "submitted_pdf_sha256": "9899b5843d70dd1e4b5fdcf4fb87488403f5bba8fd355a5d74ada6589700b9fb"
+  }
+}

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Propagation and a common recovery map · CASEIB 2026</title>
+<meta name="description" content="Explore saved monodomain and bidomain cardiac fields and a closed-form mode example from our CASEIB 2026 study.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-field-view="oblique">
+<header class="hero">
+<div class="topline"><span>CASEIB 2026</span><span>Cardiac electrophysiology · Numerical reference</span></div>
+<div class="hero-grid"><div>
+<p class="eyebrow">Monodomain / bidomain</p>
+<h1>What changes when<br> propagation changes?</h1>
+<p class="intro">Keep extracellular recovery common. Then explore how anisotropy and spatial patterns shape the difference.</p>
+</div><div class="hero-note"><span class="note-index">THE CONTROLLED COMPARISON</span>
+<div class="flow"><span>Monodomain</span><b>→</b><strong>same F</strong><b>→</b><span>Recovered potential</span></div>
+<div class="flow"><span>Bidomain</span><b>→</b><strong>same F</strong><b>→</b><span>Recovered potential</span></div>
+<p>F is shared within each conductivity pair. It changes when the conductivity family changes.</p>
+</div></div>
+<div class="scope"><span>Passive membrane</span><span>Homogeneous slab</span><span>Insulated boundary</span><span>No conducting bath</span></div>
+<div class="institution-marks" aria-label="Authors’ institutions">
+<a href="https://www.urjc.es/" aria-label="Universidad Rey Juan Carlos"><img src="assets/logo-urjc.png" width="216" height="110" alt="Universidad Rey Juan Carlos"></a>
+<a href="https://www.upv.es/" aria-label="Universitat Politècnica de València"><img src="assets/logo-upv.svg" width="226" height="80" alt="Universitat Politècnica de València"></a>
+</div>
+</header>
+<main>
+<nav class="tabs" aria-label="Companion views">
+<button id="study-tab" class="tab active" aria-pressed="true" aria-controls="study">01 &nbsp; Study results</button>
+<button id="explore-tab" class="tab" aria-pressed="false" aria-controls="explore">02 &nbsp; Explore a mode</button>
+</nav>
+<div class="display-options">
+<label>Field view <select id="field-view"><option value="oblique">Oblique surface</option><option value="top">Top view</option></select></label>
+<p id="view-description">Height and colour represent potential. M/B share the camera and scales.</p>
+</div>
+
+<section id="study" aria-labelledby="study-heading">
+<div class="section-heading"><div><p class="eyebrow">Saved Gaussian benchmark</p><h2 id="study-heading">Read the fields. Follow the contrast.</h2>
+<p>Explore the original snapshots or evaluate the same saved modal expansion at shorter time intervals. Finite-volume curves retain their original samples.</p></div><span class="status" id="study-status">Modal replay</span></div>
+<div class="controls">
+<label>Conductivity ratios<select id="study-family"><option value="unequal">Unequal · 10 vs 3</option><option value="equal">Equal · 4 vs 4</option></select></label>
+<label>Field<select id="study-field"><option value="vm">Membrane voltage</option><option value="ue">Recovered extracellular potential</option></select></label>
+<label>Time sampling<select id="study-sampling"><option value="replay">Modal replay · 0.05 ms</option><option value="saved">Six saved snapshots</option></select></label>
+<label class="time-control">Time <output id="study-time-label" for="study-time">2 ms</output><input id="study-time" type="range" min="0" max="115" step="1" value="35"><span class="ticks" id="study-ticks"><span>0.25</span><span>0.5</span><span>1</span><span>2</span><span>4</span><span>6 ms</span></span></label>
+<button class="play" id="study-play" aria-pressed="false">Play saved frames</button>
+</div>
+<p class="time-note" id="study-time-note">The saved modal solution is evaluated every 0.05 ms. Playback is slowed for viewing.</p>
+<div class="analysis-grid"><div>
+<div class="scale-key"><div><span>M/B shared scale <b id="study-abs-scale"></b></span><i class="gradient sequential" id="study-abs-gradient"></i></div><div><span>Difference scale <b id="study-diff-scale"></b></span><i class="gradient diverging"></i></div></div>
+<div class="map-stack" id="study-maps">
+<figure><figcaption><span>A</span> Monodomain <small id="study-unit">Normalized potential</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="study-m" role="img" aria-label="Monodomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
+<figure><figcaption><span>B</span> Bidomain</figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="study-b" role="img" aria-label="Bidomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
+<figure><figcaption><span>C</span> Signed difference <small>M − B · own scale</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="study-d" role="img" aria-label="Difference field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
+</div>
+<p class="figure-note">The base represents the 12:2 slab geometry. Surface height is potential. M/B share fixed colour and height scales, and the difference uses its own scale. Contrasts use all 121 × 41 samples.</p>
+<div class="chart-panel"><h3>Paired contrast over time</h3><div id="study-chart" class="chart" role="img" aria-label="Relative contrasts from saved modal and finite-volume fields"></div><p id="study-curve-note">Solid purple · modal &nbsp; / &nbsp; dashed grey · finite volume. Points are stored samples.</p></div>
+</div><aside>
+<div class="metric"><p>Paired difference</p><strong id="study-contrast">—</strong><span id="study-metric-detail">relative to the bidomain field</span></div>
+<div class="aside-block"><h3>What is being compared?</h3><p>At matched positions, the Euclidean norm of M − B is divided by the norm of B. All samples have equal weight.</p><div class="formula">δ₂ = ‖M − B‖₂ / ‖B‖₂</div><p>Voltage and recovered potential share the initial-voltage normalization within each pair.</p></div>
+<div class="aside-block"><h3>Two conductivity families</h3><p id="study-conductivity"></p><p>Entries give fibre / thickness conductivity, in S/m.</p></div>
+<div class="aside-block"><h3>Why a common F?</h3><p>Applying the same recovery map to both fields attributes the recovered difference to propagation.</p><p>The extracellular potential has zero spatial mean. It is a tissue potential.</p></div>
+</aside></div>
+<div class="independent"><div><p class="eyebrow">Independent finite-element check</p><h3>Same mechanism, another excitation</h3><p>The <em>openCARP</em> finite-element method (FEM) experiment uses a 0.2 ms current pulse in a 12 × 1 × 2 mm extrusion. Modal and finite-volume calculations start from a Gaussian voltage.</p></div><div class="fem-values"><div><strong>1.37%</strong><span>Unequal-ratio voltage contrast at 6 ms</span></div><div><strong>0.00443%</strong><span>Equal-ratio residual at 6 ms</span></div></div></div>
+<p class="limit">Different excitations and untested convergence prevent cross-solver error bounds. The percentages describe this passive benchmark. Active physiology and bath loading require further models.</p>
+</section>
+
+<section id="explore" aria-labelledby="explore-heading" hidden>
+<div class="section-heading"><div><p class="eyebrow">Closed-form teaching example</p><h2 id="explore-heading">Can you make the two models coincide?</h2><p>Start with a 5 mV spatial mean and one cosine pattern of amplitude 10 mV. Change its direction and the conductivity ratios.</p></div><span class="status teaching">Teaching example</span></div>
+<div class="controls">
+<label>Spatial pattern<select id="mode-pattern"><option value="4,2">Mixed · (4, 2)</option><option value="2,0">Along fibre only · (2, 0)</option><option value="0,1">Through thickness only · (0, 1)</option></select></label>
+<label>Conductivity ratios<select id="mode-family"><option value="unequal">Unequal · 10 vs 3</option><option value="equal">Equal · 4 vs 4</option></select></label>
+<label>Field<select id="mode-field"><option value="vm">Membrane voltage</option><option value="ue">Recovered extracellular potential</option></select></label>
+<label class="time-control">Time <output id="mode-time-label" for="mode-time">6 ms</output><input id="mode-time" type="range" min="0" max="6" step=".01" value="6"></label>
+<button class="play" id="mode-play" aria-pressed="false">Play decay</button>
+</div>
+<div class="analysis-grid"><div>
+<div class="explanation" id="mode-explanation"></div>
+<div class="scale-key"><div><span>M/B shared scale <b id="mode-abs-scale"></b></span><i class="gradient sequential" id="mode-abs-gradient"></i></div><div><span>Difference scale <b id="mode-diff-scale"></b></span><i class="gradient diverging"></i></div></div>
+<div class="map-stack">
+<figure><figcaption><span>A</span> Monodomain <small>mV</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="mode-m" role="img" aria-label="Teaching monodomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
+<figure><figcaption><span>B</span> Bidomain <small>mV</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="mode-b" role="img" aria-label="Teaching bidomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
+<figure><figcaption><span>C</span> Signed difference <small>M − B · mV · own scale</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="mode-d" role="img" aria-label="Teaching difference field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
+</div><p class="figure-note">The base represents the 12:2 slab geometry. Height is potential. Colour and height limits stay fixed across modes, conductivity families and time for each field.</p>
+<div class="chart-panel"><h3>Membrane-pattern amplitude</h3><div id="mode-chart" class="chart" role="img" aria-label="Closed-form decay amplitudes"></div><p>Solid purple · monodomain &nbsp; / &nbsp; dashed grey · bidomain. The spatial mean decays separately.</p></div>
+</div><aside>
+<div class="metric teaching-metric"><p>Integrated field contrast</p><strong id="mode-contrast">—</strong><span>Relative to bidomain · continuous spatial L² norm</span></div>
+<div class="aside-block"><h3>At this time</h3><dl id="mode-values"></dl></div>
+<div class="aside-block"><h3>The same recovery rule</h3><div class="formula">ûₑ = −aᵢ / (aᵢ + aₑ) · v̂ₘ</div><p>The recovery factor is identical for M and B within the selected family. The spatially uniform voltage contributes no recovered potential.</p></div>
+<div class="aside-block"><h3>How to read the example</h3><p>The pure modes coincide even with unequal ratios. A mixed mode can separate when ratios differ.</p><p>These percentages depend on this single-mode initial field and integrated norm. The study view uses the saved Gaussian field and a sampled norm.</p></div>
+</aside></div>
+<details class="method"><summary>Equations, parameters and scope</summary><p>The pattern is cos(pπx/L) cos(qπz/h), with L = 12 mm and h = 2 mm. Its amplitude follows 10 exp(−λt) mV. The mean follows 5 exp(−t/10 ms) mV.</p><p>For k = (pπ/L, qπ/h), aᵢ = kᵀΣᵢk and aₑ = kᵀΣₑk. The bidomain symbol is qB = aᵢaₑ/(aᵢ+aₑ). The selected local monodomain tensor has directional entries σᵢσₑ/(σᵢ+σₑ), giving qM = kᵀΣₘk. The decay rate is λ = 1/τ + q/(βCm).</p><p>β = 140 mm⁻¹, Cm = 0.01 μF/mm² and τ = 10 ms. The tensors are constant and co-aligned. Both compartments have no normal boundary current. The extracellular mean is zero. This is an evaluation of a closed-form solution.</p></details>
+</section>
+
+<footer>
+<p><strong>Separating Monodomain Propagation and Forward-Problem Effects with Green Operators in a Finite-Thickness Cardiac Slab</strong></p>
+<p>J. L. Rojo-Álvarez<sup>1</sup> · E. Sánchez-Carballo<sup>1</sup> · E. Feito-Casares<sup>1</sup> · B. Trenor<sup>2</sup> · J. Saiz<sup>2</sup> · F. M. Melgarejo-Meseguer<sup>1</sup></p>
+<p><sup>1</sup> Universidad Rey Juan Carlos, Fuenlabrada, Madrid, Spain<br><sup>2</sup> Centre for Research and Innovation in Bioengineering (Ci2B), Universitat Politècnica de València, València, Spain</p>
+<div class="footer-links"><a href="data/extraction_checks.json">Data provenance</a><a href="README.txt">Reproduction notes</a><a href="mailto:joseluis.rojo@urjc.es">Contact</a><span>CASEIB companion · 19 October 2026</span></div>
+<details><summary>Acknowledgements</summary><p>This work was partially funded by grant PID2025-169391OB-C41 funded by MICIU/AEI/10.13039/501100011033 and by FEDER, UE. This work was also supported by the CARE (PID2025-169391OB-C42), PCardioTrials (PID2022-140553OA-C42), LATENTIA (PID2022-140786NB-C32), HERMES (PID2023-152331OA-I00), and EmbedWorld (AIA2025-163540-C31) projects, funded by MICIU/AEI/10.13039/501100011033, and by the Autonomous Community of Madrid (ELLIS Madrid Node).</p></details>
+</footer>
+</main>
+<noscript>This interactive companion needs JavaScript. The printed poster contains the question, comparison, results and limitations.</noscript>
+<script src="data/study.js"></script><script src="model.js"></script><script src="data/modal_basis.js"></script><script src="modal-replay.js"></script><script src="surface.js"></script><script src="app.js"></script>
+</body></html>

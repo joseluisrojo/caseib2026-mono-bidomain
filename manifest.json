@@ -1,0 +1,22 @@
+{
+  "scope": "Curated static companion only",
+  "files_sha256": {
+    "index.html": "1595a8a1dd928b6bd7e6e0584d2430734b4f8facdd12d69eb896a3356faefe7a",
+    "styles.css": "ea5dc6601416307f12f8bb7f74906670a1a32f80445697d1e218c8226006b0c7",
+    "app.js": "02ea60988294ff5e3348076dada6ef3a13f99c41ed023fb7965912f958882911",
+    "model.js": "9fd876ec3d233de4f710467cc801fba4627a45589f3f2f0659821b30431fb79c",
+    "modal-replay.js": "f5b9f234226eb95e053ac63bf6b9f913246fba05b04abf0f254dffc20be7a5cd",
+    "surface.js": "62cb75e53aca78e22122a9be0882d0242a57d7ed736bc9bfb34f45d209a550c0",
+    "README.txt": "f036b2a16dd7c85710109cd8a56f8cde955e882887aeda1781eadaaaf0f7d8c8",
+    ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/study.js": "42a762e5d06a987c90b1ab8afb0d8de98ef7bb21169bad7c435733185bec67a2",
+    "data/modal_basis.js": "0fd9b53437d08323ec6ef9c7cfa4e84416b5ff0ecc28e23b84f45129fbd8a652",
+    "data/extraction_checks.json": "c1ed9017fdf69dea24509d560ba351854e62f4e8c2117b411558fcdb956ae22f",
+    "data/modal_export_checks.json": "ad58a6362466608451cd566ae5486d96dbc231c0803c6d850c2d470678d4fc2c",
+    "assets/logo-upv.svg": "e13d79422fbc3815870181400e95edbe1e0511c0cf4d0430ad4661ccc104d96e",
+    "assets/logo-urjc.png": "90130f6f6b20c55accf8c2715ed1ec6be9f876b51ea4ba050427c8b7b012a23d",
+    "assets/sources.json": "aa5cd92a42ec96371a32e4a6463640e391ac1f0c3bc10786b1b6642b6afc9bc7",
+    "README.md": "a8e9fc8b93288fe70045fa40fb7f1a003208ce586cd946871f9a1540fe250f23"
+  },
+  "private_manuscripts_or_review_material_included": false
+}

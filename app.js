@@ -18,7 +18,7 @@
     var c=$(id);
     c.setAttribute("aria-label",label);
     if($("field-view").value==="oblique"){
-      surface.render(c,a,nx,nz,lo,hi,pal,axis);
+      surface.render(c,a,nx,nz,lo,hi,pal,axis,surfaceStyle);
       return;
     }
     c.width=nx;c.height=nz;
@@ -148,7 +148,7 @@
     $("mode-play").textContent="Play decay";$("mode-play").setAttribute("aria-pressed","false");
   }
   var cameraFrame=null,coarsePointer=window.matchMedia("(pointer: coarse)").matches;
-  var dragEnabled=!coarsePointer,dragMode="rotate",pointers=new Map(),gestureBase=null;
+  var dragEnabled=!coarsePointer,dragMode="rotate",surfaceStyle="interp",pointers=new Map(),gestureBase=null;
   function syncCamera(){
     var c=surface.getCamera();
     ["yaw","pitch","roll"].forEach(function(k){$("camera-"+k).value=Math.round(c[k]);$("camera-"+k+"-value").textContent=Math.round(c[k])+"°";});
@@ -188,6 +188,13 @@
       dragMode=this.value==="pan"?"pan":"rotate";document.body.dataset.cameraMode=dragMode;
       document.querySelectorAll('[data-camera-mode]').forEach(function(s){s.value=dragMode;});
       setDragEnabled(true);
+    });
+  });
+  document.querySelectorAll('select[data-surface-style]').forEach(function(select){
+    select.addEventListener("change",function(){
+      surfaceStyle=this.value==="faceted"?"faceted":"interp";
+      document.querySelectorAll('select[data-surface-style]').forEach(function(s){s.value=surfaceStyle;});
+      redrawCamera();
     });
   });
   document.querySelectorAll('[data-camera-action="zoom-in"], [data-camera-action="zoom-out"]').forEach(function(button){

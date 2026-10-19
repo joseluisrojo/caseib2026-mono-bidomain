@@ -897,3 +897,4 @@ footer details p{
 .camera-zoom-controls output{min-width:43px;text-align:center;font-variant-numeric:tabular-nums;color:var(--navy)}
 .camera-actions select{min-width:120px;max-width:150px}
 [data-field-view="oblique"][data-camera-drag="true"][data-camera-mode="pan"] .map-axis canvas{cursor:move}
+.plot-camera-actions [data-camera-status]{flex-basis:150px}

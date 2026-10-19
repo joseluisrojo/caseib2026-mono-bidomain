@@ -116,7 +116,7 @@ These limits cover all saved snapshots and the full 0.05 ms modal replay.
 
 The renderer uses indexed triangles and a WebGL depth buffer for arbitrary
 orientations, with a software depth-buffer fallback if WebGL is unavailable.
-Scalar values are interpolated before colour mapping. There is no lighting
+In Interp mode, scalar values are interpolated before colour mapping. There is no lighting
 or shading that changes the calibrated colours. The same projected spatial
 scale and zero-plane position are used in all three panels. Endpoint labels
 are kept readable when an axis is foreshortened. Top view remains available.
@@ -151,3 +151,18 @@ or buttons. Combined touch movement and pinch preserve the point under the
 fingers. Offsets adapt to the viewport size on resize. Reset view restores
 zero offsets, initial angles and 100% without stopping playback or changing
 fields, scientific scales or metrics. Choosing Rotate returns to rotation.
+
+SURFACE STYLE
+The shared Surface style selector switches between Interp (the default) and
+Faceted without changing the camera, selected time, fields or scientific scales.
+Interp interpolates scalar values across each display triangle before applying
+the colour map. Faceted gives each triangle the mean of its three vertex values
+and shows fine edges within the triangle, using the same depth test as the fill.
+Both use exactly the same display mesh,
+including its existing rendering stride. This is not the computational mesh or
+a change in numerical resolution. Full-grid metrics remain unchanged. There is
+no lighting correction in either style. Style selection persists between study
+and teaching views and through Reset view, which restores only the camera.
+The flat top view is unchanged. WebGL and the software fallback support both
+styles. In the full archive, the style and colour checks can be reproduced with
+  node caseib/poster_web/tools/check_surface_style.cjs URL TEMPORARY_OUTPUT

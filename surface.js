@@ -56,15 +56,28 @@
     }
     return {vertices:vertices,indices:indices};
   }
+  function facetMesh(m){
+    var vertices=[],indices=[];
+    for(var i=0;i<m.indices.length;i+=3){
+      var ids=m.indices.slice(i,i+3),mean=ids.reduce(function(s,k){return s+m.vertices[k].value;},0)/3;
+      var p=ids.map(function(k){return m.vertices[k];}),area=Math.abs((p[1].x-p[0].x)*(p[2].y-p[0].y)-(p[1].y-p[0].y)*(p[2].x-p[0].x));
+      var heights=p.map(function(_,j){var b=p[(j+1)%3],c=p[(j+2)%3];return area/(Math.hypot(c.x-b.x,c.y-b.y)||1);});
+      ids.forEach(function(k,j){
+        var bary=[0,0,0];bary[j]=1;indices.push(vertices.length);
+        vertices.push(Object.assign({},m.vertices[k],{value:mean,bary:bary,heights:heights}));
+      });
+    }
+    return {vertices:vertices,indices:indices,faceted:true};
+  }
   function makeGPU(){
     var c=root.document.createElement("canvas"),gl=c.getContext("webgl",{alpha:true,antialias:true,preserveDrawingBuffer:true});
     if(!gl)return null;
     function shader(type,source){var s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
     var program=gl.createProgram();
-    gl.attachShader(program,shader(gl.VERTEX_SHADER,'attribute vec3 p;attribute float value;varying float scalar;void main(){gl_Position=vec4(p,1.0);scalar=value;}'));
-    gl.attachShader(program,shader(gl.FRAGMENT_SHADER,'precision mediump float;varying float scalar;uniform vec3 c0,c1,c2,c3,c4;uniform bool grid;void main(){if(grid){gl_FragColor=vec4(.77,.82,.85,1.0);}else{float t=clamp(scalar,0.0,1.0)*4.0;vec3 c;if(t<1.0)c=mix(c0,c1,t);else if(t<2.0)c=mix(c1,c2,t-1.0);else if(t<3.0)c=mix(c2,c3,t-2.0);else c=mix(c3,c4,t-3.0);gl_FragColor=vec4(c,1.0);}}'));
+    gl.attachShader(program,shader(gl.VERTEX_SHADER,'attribute vec3 p,bary,heights;attribute float value;varying float scalar;varying vec3 edgeDistance;void main(){gl_Position=vec4(p,1.0);scalar=value;edgeDistance=bary*heights;}'));
+    gl.attachShader(program,shader(gl.FRAGMENT_SHADER,'precision mediump float;varying float scalar;varying vec3 edgeDistance;uniform vec3 c0,c1,c2,c3,c4;uniform bool grid,faceted;void main(){if(grid){gl_FragColor=vec4(.77,.82,.85,1.0);}else{float t=clamp(scalar,0.0,1.0)*4.0;vec3 c;if(t<1.0)c=mix(c0,c1,t);else if(t<2.0)c=mix(c1,c2,t-1.0);else if(t<3.0)c=mix(c2,c3,t-2.0);else c=mix(c3,c4,t-3.0);if(faceted){float d=min(edgeDistance.x,min(edgeDistance.y,edgeDistance.z));c=mix(c,vec3(.12,.16,.20),.32*(1.0-smoothstep(.15,.65,d)));}gl_FragColor=vec4(c,1.0);}}'));
     gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
-    return {canvas:c,gl:gl,program:program,buffer:gl.createBuffer(),elements:gl.createBuffer(),p:gl.getAttribLocation(program,"p"),value:gl.getAttribLocation(program,"value"),grid:gl.getUniformLocation(program,"grid"),colours:[0,1,2,3,4].map(function(i){return gl.getUniformLocation(program,"c"+i);})};
+    return {canvas:c,gl:gl,program:program,buffer:gl.createBuffer(),elements:gl.createBuffer(),p:gl.getAttribLocation(program,"p"),bary:gl.getAttribLocation(program,"bary"),heights:gl.getAttribLocation(program,"heights"),value:gl.getAttribLocation(program,"value"),grid:gl.getUniformLocation(program,"grid"),faceted:gl.getUniformLocation(program,"faceted"),colours:[0,1,2,3,4].map(function(i){return gl.getUniformLocation(program,"c"+i);})};
   }
   function gpuDraw(ctx,w,h,dpr,m,lines,lo,hi,pal){
     if(gpu===undefined){try{gpu=makeGPU();}catch(e){gpu=null;}}
@@ -74,12 +87,14 @@
     gl.useProgram(g.program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);
     g.colours.forEach(function(location,i){gl.uniform3fv(location,pal[i].map(function(v){return v/255;}));});
     function upload(points){
-      var v=new Float32Array(points.length*4);points.forEach(function(p,i){v.set([2*p.x/w-1,1-2*p.y/h,-p.depth/20,((p.value||0)-lo)/(hi-lo)],4*i);});
+      var v=new Float32Array(points.length*10);points.forEach(function(p,i){v.set([2*p.x/w-1,1-2*p.y/h,-p.depth/20,((p.value||0)-lo)/(hi-lo)].concat(p.bary||[0,0,0],p.heights||[0,0,0]),10*i);});
       gl.bindBuffer(gl.ARRAY_BUFFER,g.buffer);gl.bufferData(gl.ARRAY_BUFFER,v,gl.DYNAMIC_DRAW);
-      gl.enableVertexAttribArray(g.p);gl.vertexAttribPointer(g.p,3,gl.FLOAT,false,16,0);
-      gl.enableVertexAttribArray(g.value);gl.vertexAttribPointer(g.value,1,gl.FLOAT,false,16,12);
+      gl.enableVertexAttribArray(g.p);gl.vertexAttribPointer(g.p,3,gl.FLOAT,false,40,0);
+      gl.enableVertexAttribArray(g.value);gl.vertexAttribPointer(g.value,1,gl.FLOAT,false,40,12);
+      gl.enableVertexAttribArray(g.bary);gl.vertexAttribPointer(g.bary,3,gl.FLOAT,false,40,16);
+      gl.enableVertexAttribArray(g.heights);gl.vertexAttribPointer(g.heights,3,gl.FLOAT,false,40,28);
     }
-    upload(m.vertices);gl.uniform1i(g.grid,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,g.elements);
+    upload(m.vertices);gl.uniform1i(g.grid,0);gl.uniform1i(g.faceted,m.faceted?1:0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,g.elements);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(m.indices),gl.DYNAMIC_DRAW);
     gl.drawElements(gl.TRIANGLES,m.indices.length,gl.UNSIGNED_SHORT,0);
     upload(lines);gl.uniform1i(g.grid,1);gl.drawArrays(gl.LINES,0,lines.length);
@@ -91,27 +106,39 @@
     function put(x,y,d,c){if(x<0||y<0||x>=width||y>=height)return;var k=y*width+x;if(d<depth[k])return;depth[k]=d;im.data.set([c[0],c[1],c[2],255],k*4);}
     for(var i=0;i<m.indices.length;i+=3){
       var a=m.vertices[m.indices[i]],b=m.vertices[m.indices[i+1]],c=m.vertices[m.indices[i+2]];
+      var faceColour=m.faceted?colour(a.value,lo,hi,pal):null;
       var den=(b.y-c.y)*(a.x-c.x)+(c.x-b.x)*(a.y-c.y);if(Math.abs(den)<1e-10)continue;
       var x0=Math.max(0,Math.floor(Math.min(a.x,b.x,c.x))),x1=Math.min(width-1,Math.ceil(Math.max(a.x,b.x,c.x)));
       var y0=Math.max(0,Math.floor(Math.min(a.y,b.y,c.y))),y1=Math.min(height-1,Math.ceil(Math.max(a.y,b.y,c.y)));
       for(var y=y0;y<=y1;y++)for(var x=x0;x<=x1;x++){
         var u=((b.y-c.y)*(x+.5-c.x)+(c.x-b.x)*(y+.5-c.y))/den;
         var v=((c.y-a.y)*(x+.5-c.x)+(a.x-c.x)*(y+.5-c.y))/den,t=1-u-v;
-        if(u>=0&&v>=0&&t>=0)put(x,y,u*a.depth+v*b.depth+t*c.depth,colour(u*a.value+v*b.value+t*c.value,lo,hi,pal));
+        if(u>=0&&v>=0&&t>=0){
+          var pixel=faceColour||colour(u*a.value+v*b.value+t*c.value,lo,hi,pal);
+          // Shade the edge inside the triangle, using the same CSS-pixel distance
+          // as the GPU. One depth test hides the face and its edges together.
+          if(faceColour){var distance=Math.min(u*a.heights[0],v*a.heights[1],t*a.heights[2]),s=Math.max(0,Math.min(1,(distance-.15)/.5)),alpha=.32*(1-s*s*(3-2*s));pixel=pixel.map(function(c,j){return Math.round(c*(1-alpha)+[.12,.16,.20][j]*255*alpha);});}
+          put(x,y,u*a.depth+v*b.depth+t*c.depth,pixel);
+        }
       }
     }
-    for(i=0;i<lines.length;i+=2){var p=lines[i],q=lines[i+1],steps=Math.ceil(Math.max(Math.abs(q.x-p.x),Math.abs(q.y-p.y)));
-      for(var s=0;s<=steps;s++){var f=steps?s/steps:0;put(Math.round(p.x+(q.x-p.x)*f),Math.round(p.y+(q.y-p.y)*f),p.depth+(q.depth-p.depth)*f+1e-5,[197,209,217]);}}
+    function drawLines(points,lineColour){
+      for(var i=0;i<points.length;i+=2){var p=points[i],q=points[i+1],steps=Math.ceil(Math.max(Math.abs(q.x-p.x),Math.abs(q.y-p.y)));
+        for(var s=0;s<=steps;s++){var f=steps?s/steps:0;put(Math.round(p.x+(q.x-p.x)*f),Math.round(p.y+(q.y-p.y)*f),p.depth+(q.depth-p.depth)*f+1e-5,lineColour);}}
+    }
+    drawLines(lines,[197,209,217]);
     var scratch=root.document.createElement("canvas");scratch.width=width;scratch.height=height;scratch.getContext("2d").putImageData(im,0,0);ctx.drawImage(scratch,0,0,w,h);
   }
-  function render(canvas,a,nx,nz,lo,hi,pal,axis){
+  function render(canvas,a,nx,nz,lo,hi,pal,axis,style){
     var rect=canvas.getBoundingClientRect(),w=rect.width;if(w<1)return;
     var h=rect.height,dpr=Math.min(root.devicePixelRatio||1,2);
     canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
     var ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
     var project=projector(w,h,lo,hi),m=mesh(a,nx,nz,w,project),lines=grid(project);
+    if(style==="faceted")m=facetMesh(m);
     var accelerated=gpuDraw(ctx,w,h,dpr,m,lines,lo,hi,pal);if(!accelerated)cpuDraw(ctx,w,h,m,lines,lo,hi,pal);
     canvas.dataset.renderer=accelerated?"webgl-depth-buffer":"cpu-depth-buffer";
+    canvas.dataset.surfaceStyle=style==="faceted"?"faceted":"interp";
     canvas.dataset.camera=JSON.stringify(getCamera());canvas.dataset.zeroPlane="0";
     function line(points){ctx.beginPath();points.forEach(function(p,i){if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.strokeStyle="#546979";ctx.lineWidth=1;ctx.stroke();}
     var labels=[];

@@ -96,8 +96,8 @@
     var scratch=root.document.createElement("canvas");scratch.width=width;scratch.height=height;scratch.getContext("2d").putImageData(im,0,0);ctx.drawImage(scratch,0,0,w,h);
   }
   function render(canvas,a,nx,nz,lo,hi,pal,axis){
-    var w=canvas.getBoundingClientRect().width;if(w<1)return;
-    var h=w/(w<500?1.45:2.1),dpr=Math.min(root.devicePixelRatio||1,2);
+    var rect=canvas.getBoundingClientRect(),w=rect.width;if(w<1)return;
+    var h=rect.height,dpr=Math.min(root.devicePixelRatio||1,2);
     canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
     var ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
     var project=projector(w,h,lo,hi),m=mesh(a,nx,nz,w,project),lines=grid(project);

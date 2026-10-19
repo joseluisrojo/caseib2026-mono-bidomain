@@ -1,12 +1,12 @@
 {
   "scope": "Curated static companion only",
   "files_sha256": {
-    "index.html": "9788f65cd990a1447cafa5c0759b1a12f068810e3419dad3a283410659f5eb8b",
+    "index.html": "bad3d86741557b0567fe1a0dca0ef2b99b62ddf21808d81228aed441eaf9d7e8",
     "styles.css": "a4dfe3f8c17b082eab2647a66902df883e5fce474add448af4456e418dcd6a60",
     "app.js": "803f42d270640ab4e547c706f12ffc121f6214095b877416bd4214c03f4da69f",
     "model.js": "9fd876ec3d233de4f710467cc801fba4627a45589f3f2f0659821b30431fb79c",
     "modal-replay.js": "f5b9f234226eb95e053ac63bf6b9f913246fba05b04abf0f254dffc20be7a5cd",
-    "surface.js": "e9f915ea72fd8612e70981b03e555b2151dce01e539fdfc73ed7015b40626aeb",
+    "surface.js": "1afa0d47844059e2e541bda80445e12cfa2046f3635c6414622e8c425555709b",
     "README.txt": "7c333e99d58aa06f24124b541f4140f86a25bf38dc24426d5384db66154585ee",
     ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "data/study.js": "42a762e5d06a987c90b1ab8afb0d8de98ef7bb21169bad7c435733185bec67a2",

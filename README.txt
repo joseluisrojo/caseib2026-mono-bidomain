@@ -96,7 +96,7 @@ or move and twist two fingers to combine all three rotations. The plot toolbar
 stays visible while scrolling through the fields and shares its state with
 the controls above. Both toolbars include Reset view.
 Turn drag rotation off to restore normal vertical scrolling over the plots.
-Reset view restores yaw -20, pitch 28 and roll 0 degrees. It changes neither
+Reset view restores yaw -20, pitch 28 and roll 0 degrees, with zoom 100%. It changes neither
 the selected field nor time, metrics or playback state. Camera changes redraw
 cached fields and do not reevaluate the modal expansion or teaching solution.
 
@@ -125,3 +125,15 @@ In the full study archive, camera and touch checks can be reproduced with
   node caseib/poster_web/tools/check_camera_browser.cjs URL TEMPORARY_OUTPUT
 This requires Playwright and Chrome, uses an isolated browser profile and
 emulates mobile viewports and touch input. It is not a physical-phone test.
+
+SHARED ZOOM
+While rotation is enabled, the mouse wheel zooms all three surfaces together.
+On touch screens, enable rotation and pinch with two fingers to zoom. Pinch,
+turn and roll can be combined. The plus/minus buttons provide the same action
+without a wheel or touch gesture. Zoom is limited to 50–400% and centred on
+the common camera, independently of the touched panel. Reset view restores
+100% and the initial orientation. Zoom preserves field values, scientific
+scales, spatial proportions, time and metrics. Enlarged geometry can leave
+the viewport, and labels whose anchors leave it are hidden rather than moved
+to misleading coordinate positions. Turn rotation off to scroll normally over
+the plots. The flat top view keeps its original behaviour.

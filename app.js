@@ -152,6 +152,7 @@
   function syncCamera(){
     var c=surface.getCamera();
     ["yaw","pitch","roll"].forEach(function(k){$("camera-"+k).value=Math.round(c[k]);$("camera-"+k+"-value").textContent=Math.round(c[k])+"°";});
+    document.querySelectorAll('[data-camera-zoom]').forEach(function(label){label.textContent=Math.round(100*c.zoom)+"%";});
   }
   function redrawCamera(){
     syncCamera();if(cameraFrame!==null)return;
@@ -170,7 +171,7 @@
       button.title=dragEnabled?"Turn rotation off to scroll over the plots":"Enable drag rotation";
     });
     document.querySelectorAll('[data-camera-status]').forEach(function(label){
-      label.textContent=dragEnabled?(coarsePointer?"Drag to turn. Twist two fingers to roll.":"Drag any surface. Shift-drag to roll."):"Scroll mode. Enable rotation to turn the surfaces.";
+      label.textContent=dragEnabled?(coarsePointer?"Drag to turn. Pinch to zoom. Twist to roll.":"Drag to turn. Wheel to zoom. Shift-drag to roll."):"Scroll mode. Enable rotation to turn or zoom the surfaces.";
     });
     pointers.clear();gestureBase=null;
   }
@@ -180,10 +181,14 @@
   document.querySelectorAll('[data-camera-action="toggle"]').forEach(function(button){
     button.addEventListener("click",function(){setDragEnabled(!dragEnabled);});
   });
+  document.querySelectorAll('[data-camera-action="zoom-in"], [data-camera-action="zoom-out"]').forEach(function(button){
+    button.addEventListener("click",function(){surface.setCamera({zoom:surface.getCamera().zoom*(this.dataset.cameraAction==="zoom-in"?1.2:1/1.2)});redrawCamera();});
+  });
   function gesture(){
     var a=Array.from(pointers.values());if(!a.length)return null;
     return {x:a.reduce(function(s,p){return s+p.x;},0)/a.length,y:a.reduce(function(s,p){return s+p.y;},0)/a.length,
-      angle:a.length>1?Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x):0,camera:surface.getCamera(),count:a.length};
+      angle:a.length>1?Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x):0,
+      distance:a.length>1?Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y):0,camera:surface.getCamera(),count:a.length};
   }
   document.querySelectorAll(".map-axis canvas").forEach(function(canvas){
     canvas.addEventListener("pointerdown",function(e){
@@ -196,9 +201,15 @@
       var dx=now.x-base.x,dy=now.y-base.y,c=base.camera;
       if(now.count===1&&e.shiftKey)surface.setCamera({roll:c.roll+dx*.6});
       else surface.setCamera({yaw:c.yaw+dx*.5,pitch:c.pitch-dy*.5,
-        roll:c.roll+(now.count>1?(now.angle-base.angle)*180/Math.PI:0)});
+        roll:c.roll+(now.count>1?(now.angle-base.angle)*180/Math.PI:0),
+        zoom:now.count>1&&base.distance>1?c.zoom*now.distance/base.distance:c.zoom});
       redrawCamera();
     });
+    canvas.addEventListener("wheel",function(e){
+      if(!dragEnabled||$("field-view").value!=="oblique")return;
+      e.preventDefault();var dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?canvas.clientHeight:1);
+      surface.setCamera({zoom:surface.getCamera().zoom*Math.exp(-Math.max(-400,Math.min(400,dy))*.0015)});redrawCamera();
+    },{passive:false});
     function release(e){if(pointers.delete(e.pointerId))gestureBase=gesture();}
     canvas.addEventListener("pointerup",release);canvas.addEventListener("pointercancel",release);canvas.addEventListener("lostpointercapture",release);
   });

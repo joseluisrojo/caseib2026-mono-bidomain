@@ -892,3 +892,6 @@ footer details p{
 .plot-camera-actions button{font-size:13px;padding:8px 12px}
 .plot-camera-actions [data-camera-status]{font-size:12px;color:var(--muted);flex:1 1 220px}
 [data-field-view="top"] .plot-camera-actions{display:none}
+.camera-zoom-controls{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);white-space:nowrap}
+.camera-zoom-controls button{min-width:44px;font-size:20px;padding:3px 9px}
+.camera-zoom-controls output{min-width:43px;text-align:center;font-variant-numeric:tabular-nums;color:var(--navy)}

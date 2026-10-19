@@ -1,9 +1,12 @@
 /* Shared orthographic camera. Scalar colours have no lighting correction. */
 (function(root) {
   "use strict";
-  var initial={yaw:-20,pitch:28,roll:0},camera=Object.assign({},initial),gpu;
+  var initial={yaw:-20,pitch:28,roll:0,zoom:1},camera=Object.assign({},initial),gpu;
   function wrap(v){return ((v+180)%360+360)%360-180;}
-  function setCamera(next){["yaw","pitch","roll"].forEach(function(k){if(Number.isFinite(next[k]))camera[k]=wrap(next[k]);});}
+  function setCamera(next){
+    ["yaw","pitch","roll"].forEach(function(k){if(Number.isFinite(next[k]))camera[k]=wrap(next[k]);});
+    if(Number.isFinite(next.zoom)&&next.zoom>0)camera.zoom=Math.max(.5,Math.min(4,next.zoom));
+  }
   function getCamera(){return Object.assign({},camera);}
   function resetCamera(){setCamera(initial);}
   function colour(v,lo,hi,pal){
@@ -26,7 +29,7 @@
     var us=points.map(function(p){return p.u;}),vs=points.map(function(p){return p.v;});
     var umin=Math.min.apply(null,us),umax=Math.max.apply(null,us),vmin=Math.min.apply(null,vs),vmax=Math.max.apply(null,vs);
     var left=40,right=w<500?72:86,top=30,bottom=43;
-    var scale=Math.min((w-left-right)/(umax-umin),(h-top-bottom)/(vmax-vmin));
+    var scale=camera.zoom*Math.min((w-left-right)/(umax-umin),(h-top-bottom)/(vmax-vmin));
     var ox=left+(w-left-right-(umax-umin)*scale)/2-umin*scale;
     var oy=top+(h-top-bottom-(vmax-vmin)*scale)/2+vmax*scale;
     return function(x,z,v){var p=worldHeight(x,z,2.6*v/norm);return {x:ox+p.u*scale,y:oy-p.v*scale,depth:p.depth};};
@@ -107,6 +110,7 @@
     function line(points){ctx.beginPath();points.forEach(function(p,i){if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.strokeStyle="#546979";ctx.lineWidth=1;ctx.stroke();}
     var labels=[];
     function text(p,s,dx,dy,align){
+      if(p.x<0||p.x>w||p.y<0||p.y>h)return;
       ctx.font=(w<500?"11px":"12px")+" -apple-system,Segoe UI,sans-serif";
       var tw=ctx.measureText(s).width,baseX=p.x+(dx||0)+(align==="left"?tw/2:align==="right"?-tw/2:0),baseY=p.y+(dy||0);
       var offsets=[0,14,-14,28,-28,42,-42],box,x,y;

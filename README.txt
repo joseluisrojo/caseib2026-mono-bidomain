@@ -91,11 +91,11 @@ INTERACTIVE CAMERA AND DISPLAY SCALES
 The same yaw, pitch and roll apply to M, B and their difference in both views.
 Mouse rotation is enabled on arrival. Drag any surface to turn and Shift-drag
 to roll. The three sliders remain available. On touch screens, select Enable
-rotation in the toolbar beside the plots, then drag with one finger to turn
+controls in the toolbar beside the plots, then drag with one finger to turn
 or move and twist two fingers to combine all three rotations. The plot toolbar
 stays visible while scrolling through the fields and shares its state with
 the controls above. Both toolbars include Reset view.
-Turn drag rotation off to restore normal vertical scrolling over the plots.
+Turn controls off to restore normal vertical scrolling over the plots.
 Reset view restores yaw -20, pitch 28 and roll 0 degrees, with zoom 100%. It changes neither
 the selected field nor time, metrics or playback state. Camera changes redraw
 cached fields and do not reevaluate the modal expansion or teaching solution.
@@ -127,13 +127,27 @@ This requires Playwright and Chrome, uses an isolated browser profile and
 emulates mobile viewports and touch input. It is not a physical-phone test.
 
 SHARED ZOOM
-While rotation is enabled, the mouse wheel zooms all three surfaces together.
-On touch screens, enable rotation and pinch with two fingers to zoom. Pinch,
+While controls are enabled, the mouse wheel zooms all three surfaces together.
+On touch screens, enable controls and pinch with two fingers to zoom. Pinch,
 turn and roll can be combined. The plus/minus buttons provide the same action
 without a wheel or touch gesture. Zoom is limited to 50–400% and centred on
 the common camera, independently of the touched panel. Reset view restores
 100% and the initial orientation. Zoom preserves field values, scientific
 scales, spatial proportions, time and metrics. Enlarged geometry can leave
 the viewport, and labels whose anchors leave it are hidden rather than moved
-to misleading coordinate positions. Turn rotation off to scroll normally over
+to misleading coordinate positions. Turn controls off to scroll normally over
 the plots. The flat top view keeps its original behaviour.
+
+SHARED VIEW MOVEMENT
+Choose Move view beside the plots and drag with a mouse or one finger.
+Selecting this action also enables camera interaction. Alt/Option-drag, middle
+drag and right-drag move the view without changing the selected action.
+Rotate retains the previous one-finger rotation and Shift-drag roll. In Move
+view mode, a two-finger gesture combines translation, pinch zoom and roll.
+All three panels share horizontal/vertical offsets as well as angles and zoom,
+and the teaching view inherits that same camera. The offsets are stored before
+zoom, so a region moved to the centre stays there when zooming with the wheel
+or buttons. Combined touch movement and pinch preserve the point under the
+fingers. Offsets adapt to the viewport size on resize. Reset view restores
+zero offsets, initial angles and 100% without stopping playback or changing
+fields, scientific scales or metrics. Choosing Rotate returns to rotation.

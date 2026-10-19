@@ -1,14 +1,19 @@
 /* Shared orthographic camera. Scalar colours have no lighting correction. */
 (function(root) {
   "use strict";
-  var initial={yaw:-20,pitch:28,roll:0,zoom:1},camera=Object.assign({},initial),gpu;
+  var initial={yaw:-20,pitch:28,roll:0,zoom:1,panX:0,panY:0},camera=Object.assign({},initial),gpu;
   function wrap(v){return ((v+180)%360+360)%360-180;}
   function setCamera(next){
     ["yaw","pitch","roll"].forEach(function(k){if(Number.isFinite(next[k]))camera[k]=wrap(next[k]);});
     if(Number.isFinite(next.zoom)&&next.zoom>0)camera.zoom=Math.max(.5,Math.min(4,next.zoom));
+    ["panX","panY"].forEach(function(k){if(Number.isFinite(next[k]))camera[k]=Math.max(-2,Math.min(2,next[k]));});
   }
   function getCamera(){return Object.assign({},camera);}
   function resetCamera(){setCamera(initial);}
+  function viewport(w,h){
+    var left=40,right=w<500?72:86,top=30,bottom=43;
+    return {left:left,top:top,width:w-left-right,height:h-top-bottom,cx:(left+w-right)/2,cy:(top+h-bottom)/2};
+  }
   function colour(v,lo,hi,pal){
     var t=Math.max(0,Math.min(1,(v-lo)/(hi-lo)))*(pal.length-1);
     var i=Math.min(pal.length-2,Math.floor(t)),f=t-i;
@@ -28,10 +33,11 @@
     [-.5,12.5].forEach(function(x){[-.3,2.3].forEach(function(z){[-2.6,2.6].forEach(function(v){points.push(worldHeight(x,z,v));});});});
     var us=points.map(function(p){return p.u;}),vs=points.map(function(p){return p.v;});
     var umin=Math.min.apply(null,us),umax=Math.max.apply(null,us),vmin=Math.min.apply(null,vs),vmax=Math.max.apply(null,vs);
-    var left=40,right=w<500?72:86,top=30,bottom=43;
-    var scale=camera.zoom*Math.min((w-left-right)/(umax-umin),(h-top-bottom)/(vmax-vmin));
-    var ox=left+(w-left-right-(umax-umin)*scale)/2-umin*scale;
-    var oy=top+(h-top-bottom-(vmax-vmin)*scale)/2+vmax*scale;
+    var frame=viewport(w,h);
+    var scale=camera.zoom*Math.min(frame.width/(umax-umin),frame.height/(vmax-vmin));
+    // Pan is stored before zoom so a point centred by dragging stays centred on zooming.
+    var ox=frame.left+(frame.width-(umax-umin)*scale)/2-umin*scale+camera.panX*frame.width*camera.zoom;
+    var oy=frame.top+(frame.height-(vmax-vmin)*scale)/2+vmax*scale+camera.panY*frame.height*camera.zoom;
     return function(x,z,v){var p=worldHeight(x,z,2.6*v/norm);return {x:ox+p.u*scale,y:oy-p.v*scale,depth:p.depth};};
   }
   function grid(project){
@@ -136,5 +142,5 @@
     [0,6,12].forEach(function(x){text(project(x,0,0),String(x),0,17);});outsideTitle(project(6,0,0),"x (mm)");
     text(project(0,2,0),"2",-10,3,"right");outsideTitle(project(0,1,0),"z (mm)");
   }
-  root.CASEIB_SURFACE={render:render,projector:projector,getCamera:getCamera,setCamera:setCamera,resetCamera:resetCamera};
+  root.CASEIB_SURFACE={render:render,projector:projector,viewport:viewport,getCamera:getCamera,setCamera:setCamera,resetCamera:resetCamera};
 })(typeof window!=="undefined"?window:globalThis);

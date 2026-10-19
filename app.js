@@ -148,7 +148,7 @@
     $("mode-play").textContent="Play decay";$("mode-play").setAttribute("aria-pressed","false");
   }
   var cameraFrame=null,coarsePointer=window.matchMedia("(pointer: coarse)").matches;
-  var dragEnabled=!coarsePointer,pointers=new Map(),gestureBase=null;
+  var dragEnabled=!coarsePointer,dragMode="rotate",pointers=new Map(),gestureBase=null;
   function syncCamera(){
     var c=surface.getCamera();
     ["yaw","pitch","roll"].forEach(function(k){$("camera-"+k).value=Math.round(c[k]);$("camera-"+k+"-value").textContent=Math.round(c[k])+"°";});
@@ -167,11 +167,13 @@
   function setDragEnabled(enabled){
     dragEnabled=enabled;document.body.dataset.cameraDrag=String(dragEnabled);
     document.querySelectorAll('[data-camera-action="toggle"]').forEach(function(button){
-      button.setAttribute("aria-pressed",String(dragEnabled));button.textContent=dragEnabled?"Rotation on":"Enable rotation";
-      button.title=dragEnabled?"Turn rotation off to scroll over the plots":"Enable drag rotation";
+      button.setAttribute("aria-pressed",String(dragEnabled));button.textContent=dragEnabled?"Controls on":"Enable controls";
+      button.title=dragEnabled?"Turn controls off to scroll over the plots":"Enable camera controls";
     });
     document.querySelectorAll('[data-camera-status]').forEach(function(label){
-      label.textContent=dragEnabled?(coarsePointer?"Drag to turn. Pinch to zoom. Twist to roll.":"Drag to turn. Wheel to zoom. Shift-drag to roll."):"Scroll mode. Enable rotation to turn or zoom the surfaces.";
+      label.textContent=!dragEnabled?"Scroll mode. Enable controls to explore the surfaces.":dragMode==="pan"?
+        (coarsePointer?"Drag to move. Pinch to zoom. Twist to roll.":"Drag to move the view. Wheel to zoom."):
+        (coarsePointer?"Drag to turn. Pinch to zoom. Choose Move view to centre a region.":"Drag to turn. Alt-drag to move. Wheel to zoom.");
     });
     pointers.clear();gestureBase=null;
   }
@@ -181,6 +183,13 @@
   document.querySelectorAll('[data-camera-action="toggle"]').forEach(function(button){
     button.addEventListener("click",function(){setDragEnabled(!dragEnabled);});
   });
+  document.querySelectorAll('[data-camera-mode]').forEach(function(select){
+    select.addEventListener("change",function(){
+      dragMode=this.value==="pan"?"pan":"rotate";document.body.dataset.cameraMode=dragMode;
+      document.querySelectorAll('[data-camera-mode]').forEach(function(s){s.value=dragMode;});
+      setDragEnabled(true);
+    });
+  });
   document.querySelectorAll('[data-camera-action="zoom-in"], [data-camera-action="zoom-out"]').forEach(function(button){
     button.addEventListener("click",function(){surface.setCamera({zoom:surface.getCamera().zoom*(this.dataset.cameraAction==="zoom-in"?1.2:1/1.2)});redrawCamera();});
   });
@@ -188,18 +197,26 @@
     var a=Array.from(pointers.values());if(!a.length)return null;
     return {x:a.reduce(function(s,p){return s+p.x;},0)/a.length,y:a.reduce(function(s,p){return s+p.y;},0)/a.length,
       angle:a.length>1?Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x):0,
-      distance:a.length>1?Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y):0,camera:surface.getCamera(),count:a.length};
+      distance:a.length>1?Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y):0,camera:surface.getCamera(),count:a.length,
+      pan:dragMode==="pan"||a[0].pan,rect:a[0].rect};
   }
   document.querySelectorAll(".map-axis canvas").forEach(function(canvas){
     canvas.addEventListener("pointerdown",function(e){
-      if(!dragEnabled||$("field-view").value!=="oblique"||e.button>0)return;
-      e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});gestureBase=gesture();canvas.setPointerCapture(e.pointerId);
+      if(!dragEnabled||$("field-view").value!=="oblique"||e.button>2)return;
+      e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,pan:e.altKey||e.button===1||e.button===2,rect:canvas.getBoundingClientRect()});
+      gestureBase=gesture();canvas.setPointerCapture(e.pointerId);
     });
     canvas.addEventListener("pointermove",function(e){
       if(!pointers.has(e.pointerId)||!gestureBase)return;
-      e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});var now=gesture(),base=gestureBase;
+      e.preventDefault();var pointer=pointers.get(e.pointerId);pointer.x=e.clientX;pointer.y=e.clientY;var now=gesture(),base=gestureBase;
       var dx=now.x-base.x,dy=now.y-base.y,c=base.camera;
-      if(now.count===1&&e.shiftKey)surface.setCamera({roll:c.roll+dx*.6});
+      if(base.pan){
+        surface.setCamera({zoom:now.count>1&&base.distance>1?c.zoom*now.distance/base.distance:c.zoom,
+          roll:c.roll+(now.count>1?(now.angle-base.angle)*180/Math.PI:0)});
+        var zoom=surface.getCamera().zoom,r=base.rect,f=surface.viewport(r.width,r.height);
+        surface.setCamera({panX:c.panX+((now.x-r.left-f.cx)/zoom-(base.x-r.left-f.cx)/c.zoom)/f.width,
+          panY:c.panY+((now.y-r.top-f.cy)/zoom-(base.y-r.top-f.cy)/c.zoom)/f.height});
+      }else if(now.count===1&&e.shiftKey)surface.setCamera({roll:c.roll+dx*.6});
       else surface.setCamera({yaw:c.yaw+dx*.5,pitch:c.pitch-dy*.5,
         roll:c.roll+(now.count>1?(now.angle-base.angle)*180/Math.PI:0),
         zoom:now.count>1&&base.distance>1?c.zoom*now.distance/base.distance:c.zoom});
@@ -210,6 +227,7 @@
       e.preventDefault();var dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?canvas.clientHeight:1);
       surface.setCamera({zoom:surface.getCamera().zoom*Math.exp(-Math.max(-400,Math.min(400,dy))*.0015)});redrawCamera();
     },{passive:false});
+    canvas.addEventListener("contextmenu",function(e){if(dragEnabled&&$("field-view").value==="oblique")e.preventDefault();});
     function release(e){if(pointers.delete(e.pointerId))gestureBase=gesture();}
     canvas.addEventListener("pointerup",release);canvas.addEventListener("pointercancel",release);canvas.addEventListener("lostpointercapture",release);
   });

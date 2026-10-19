@@ -86,3 +86,39 @@ Bioengineering (Ci2B), Universitat Politècnica de València. The other authors
 are with Universidad Rey Juan Carlos. Institutional marks retain their owners'
 rights. Acknowledgements and grant identifiers appear in the companion footer.
 Contact: joseluis.rojo@urjc.es
+
+INTERACTIVE CAMERA AND DISPLAY SCALES
+The same yaw, pitch and roll apply to M, B and their difference in both views.
+Use the three sliders, or select Enable drag rotation. Mouse drag turns the
+surface, and Shift-drag adds camera roll. On a touch screen, drag with one
+finger to turn, or move and twist two fingers to combine all three rotations.
+Turn drag rotation off to restore normal vertical scrolling over the plots.
+Reset view restores yaw -20, pitch 28 and roll 0 degrees. It changes neither
+the selected field nor time, metrics or playback state. Camera changes redraw
+cached fields and do not reevaluate the modal expansion or teaching solution.
+
+The spatial reference is a transparent wire grid at potential zero. Its base
+coordinates remain x and z in mm. Height represents potential rather than the
+spatial thickness coordinate z. No opaque floor hides negative potential.
+M/B use percentages of the initial membrane-voltage peak for both voltage and
+recovered extracellular potential. The signed difference explicitly retains
+normalized potential relative to that same reference. It is not the percentage
+contrast delta_2, whose denominator is the current bidomain field norm.
+Voltage limits are [-0.001,0.8] internally, with axis ticks from 0 to 80 percent
+and a -0.1 percent lower margin preserving small negative undershoots. The
+voltage difference has fixed limits +/-0.0045. Recovered potential uses
++/-0.15 (labelled +/-15 percent of the initial voltage reference), and its
+difference +/-0.0007. The independent teaching example retains its mV units.
+These limits cover all saved snapshots and the full 0.05 ms modal replay.
+
+The renderer uses indexed triangles and a WebGL depth buffer for arbitrary
+orientations, with a software depth-buffer fallback if WebGL is unavailable.
+Scalar values are interpolated before colour mapping. There is no lighting
+or shading that changes the calibrated colours. The same projected spatial
+scale and zero-plane position are used in all three panels. Endpoint labels
+are kept readable when an axis is foreshortened. Top view remains available.
+
+In the full study archive, camera and touch checks can be reproduced with
+  node caseib/poster_web/tools/check_camera_browser.cjs URL TEMPORARY_OUTPUT
+This requires Playwright and Chrome, uses an isolated browser profile and
+emulates mobile viewports and touch input. It is not a physical-phone test.

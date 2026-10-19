@@ -6,7 +6,7 @@
   var $=function(id){return document.getElementById(id);};
   var SEQ=[[68,1,84],[59,82,139],[33,145,140],[94,201,98],[253,231,37]];
   var DIV=[[40,87,147],[161,194,220],[255,255,255],[228,160,150],[159,40,57]];
-  var playing=null,active="study";
+  var playing=null,active="study",mapCache={},surface=window.CASEIB_SURFACE;
   function fmt(x,n){return Math.abs(x)<0.0001 && x!==0 ? x.toExponential(2):Number(x.toPrecision(n||3)).toString();}
   function percent(x){return x===null ? "Undefined":(x<1e-12 ? (100*x).toExponential(2): (100*x).toFixed(3))+"%";}
   function rgb(v,lo,hi,pal) {
@@ -14,11 +14,11 @@
     var a=Math.min(pal.length-2,Math.floor(t)),f=t-a;
     return pal[a].map(function(x,j){return Math.round(x+(pal[a+1][j]-x)*f);});
   }
-  function map(id,a,nx,nz,lo,hi,pal,label) {
+  function map(id,a,nx,nz,lo,hi,pal,label,axis) {
     var c=$(id);
     c.setAttribute("aria-label",label);
     if($("field-view").value==="oblique"){
-      window.CASEIB_SURFACE.render(c,a,nx,nz,lo,hi,pal,id.indexOf("mode")===0?"mV":"norm.");
+      surface.render(c,a,nx,nz,lo,hi,pal,axis);
       return;
     }
     c.width=nx;c.height=nz;
@@ -29,26 +29,20 @@
     }
     ctx.putImageData(im,0,0);c.setAttribute("aria-label",label);
   }
-  var bounds={};
-  ["vm","ue"].forEach(function(field){
-    var lo=Infinity,hi=-Infinity,delta=0;
-    ["equal","unequal"].forEach(function(family){
-      var a=D.cases[family];
-      for(var k=0;k<D.times_ms.length;k++)for(var j=0;j<a[field+"M"][k].length;j++){
-        var m=a[field+"M"][k][j],b=a[field+"B"][k][j];
-        lo=Math.min(lo,m,b);hi=Math.max(hi,m,b);delta=Math.max(delta,Math.abs(m-b));
-      }
-    });
-    if(field==="ue"){hi=Math.max(Math.abs(lo),Math.abs(hi));lo=-hi;}
-    bounds[field]={lo:Math.min(lo,B.bounds[field].lo),hi:Math.max(hi,B.bounds[field].hi),delta:Math.max(delta,B.bounds[field].delta)};
-  });
+  // Rounded fixed limits contain all saved fields and the entire modal replay.
+  // The negative voltage undershoot is retained rather than clipped at zero.
+  var bounds={vm:{lo:-.001,hi:.8,delta:.0045},ue:{lo:-.15,hi:.15,delta:.0007}};
   function drawMaps(prefix,a,b,d,nx,nz,bounds,field,label) {
+    mapCache[prefix]=Array.prototype.slice.call(arguments);
     var pal=field==="ue"?DIV:SEQ;
-    map(prefix+"-m",a,nx,nz,bounds.lo,bounds.hi,pal,"Monodomain "+label);
-    map(prefix+"-b",b,nx,nz,bounds.lo,bounds.hi,pal,"Bidomain "+label);
-    map(prefix+"-d",d,nx,nz,-bounds.delta,bounds.delta,DIV,"Signed monodomain minus bidomain "+label);
-    $(prefix+"-abs-scale").textContent=fmt(bounds.lo)+" to "+fmt(bounds.hi)+(prefix==="mode"?" mV":"");
-    $(prefix+"-diff-scale").textContent="−"+fmt(bounds.delta)+" to +"+fmt(bounds.delta)+(prefix==="mode"?" mV":"");
+    var teaching=prefix==="mode",axis=teaching?{unit:"mV"}:{unit:"% peak",factor:100,ticks:field==="vm"?[0,.2,.4,.6,.8]:[-.15,0,.15]};
+    var diffAxis={unit:teaching?"mV":"norm.",ticks:[-bounds.delta,0,bounds.delta]};
+    map(prefix+"-m",a,nx,nz,bounds.lo,bounds.hi,pal,"Monodomain "+label,axis);
+    map(prefix+"-b",b,nx,nz,bounds.lo,bounds.hi,pal,"Bidomain "+label,axis);
+    map(prefix+"-d",d,nx,nz,-bounds.delta,bounds.delta,DIV,"Signed monodomain minus bidomain "+label,diffAxis);
+    $(prefix+"-abs-scale").textContent=teaching?fmt(bounds.lo)+" to "+fmt(bounds.hi)+" mV":
+      (field==="vm"?"−0.1 to 80":"−15 to +15")+" % of initial membrane-voltage peak";
+    $(prefix+"-diff-scale").textContent="−"+fmt(bounds.delta)+" to +"+fmt(bounds.delta)+(teaching?" mV":" normalized");
     $(prefix+"-abs-gradient").className="gradient "+(field==="ue"?"diverging":"sequential");
   }
   function chart(id,series,currentTime,ylabel,yCeiling) {
@@ -153,6 +147,49 @@
     $("study-play").textContent=$("study-sampling").value==="replay"?"Play modal solution":"Play saved frames";$("study-play").setAttribute("aria-pressed","false");
     $("mode-play").textContent="Play decay";$("mode-play").setAttribute("aria-pressed","false");
   }
+  var cameraFrame=null,dragEnabled=false,pointers=new Map(),gestureBase=null;
+  function syncCamera(){
+    var c=surface.getCamera();
+    ["yaw","pitch","roll"].forEach(function(k){$("camera-"+k).value=Math.round(c[k]);$("camera-"+k+"-value").textContent=Math.round(c[k])+"°";});
+  }
+  function redrawCamera(){
+    syncCamera();if(cameraFrame!==null)return;
+    cameraFrame=requestAnimationFrame(function(){
+      cameraFrame=null;var args=mapCache[active==="study"?"study":"mode"];
+      if(args)drawMaps.apply(null,args);
+    });
+  }
+  ["yaw","pitch","roll"].forEach(function(k){
+    $("camera-"+k).addEventListener("input",function(){var next={};next[k]=+this.value;surface.setCamera(next);redrawCamera();});
+  });
+  $("camera-reset").addEventListener("click",function(){surface.resetCamera();redrawCamera();});
+  $("camera-drag").addEventListener("click",function(){
+    dragEnabled=!dragEnabled;document.body.dataset.cameraDrag=String(dragEnabled);
+    this.setAttribute("aria-pressed",String(dragEnabled));this.textContent=dragEnabled?"Turn drag rotation off":"Enable drag rotation";
+    pointers.clear();gestureBase=null;
+  });
+  function gesture(){
+    var a=Array.from(pointers.values());if(!a.length)return null;
+    return {x:a.reduce(function(s,p){return s+p.x;},0)/a.length,y:a.reduce(function(s,p){return s+p.y;},0)/a.length,
+      angle:a.length>1?Math.atan2(a[1].y-a[0].y,a[1].x-a[0].x):0,camera:surface.getCamera(),count:a.length};
+  }
+  document.querySelectorAll(".map-axis canvas").forEach(function(canvas){
+    canvas.addEventListener("pointerdown",function(e){
+      if(!dragEnabled||$("field-view").value!=="oblique"||e.button>0)return;
+      e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});gestureBase=gesture();canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener("pointermove",function(e){
+      if(!pointers.has(e.pointerId)||!gestureBase)return;
+      e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});var now=gesture(),base=gestureBase;
+      var dx=now.x-base.x,dy=now.y-base.y,c=base.camera;
+      if(now.count===1&&e.shiftKey)surface.setCamera({roll:c.roll+dx*.6});
+      else surface.setCamera({yaw:c.yaw+dx*.5,pitch:c.pitch-dy*.5,
+        roll:c.roll+(now.count>1?(now.angle-base.angle)*180/Math.PI:0)});
+      redrawCamera();
+    });
+    function release(e){if(pointers.delete(e.pointerId))gestureBase=gesture();}
+    canvas.addEventListener("pointerup",release);canvas.addEventListener("pointercancel",release);canvas.addEventListener("lostpointercapture",release);
+  });
   ["study","explore"].forEach(function(view){
     $(view+"-tab").addEventListener("click",function(){
       stop();active=view;
@@ -173,8 +210,9 @@
   $("study-sampling").addEventListener("change",function(){stop();setStudySampling();updateStudy();stop();});
   $("field-view").addEventListener("change",function(){
     document.body.dataset.fieldView=this.value;
+    $("camera-controls").hidden=this.value!=="oblique";pointers.clear();gestureBase=null;
     $("view-description").textContent=this.value==="oblique"?
-      "Height and colour represent potential. M/B share the camera and scales.":
+      "Height and colour represent potential. All three surfaces share the camera. The reference grid is at potential zero.":
       "Colour represents potential on the spatial x-z plane. M/B share the scale.";
     if(active==="study")updateStudy();else updateMode();
   });
@@ -206,5 +244,5 @@
     clearTimeout(resizeTimer);
     resizeTimer=setTimeout(function(){if(active==="study")updateStudy();else updateMode();},120);
   });
-  setStudySampling();updateStudy();updateMode();stop();
+  syncCamera();setStudySampling();updateStudy();updateMode();stop();
 })();

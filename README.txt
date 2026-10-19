@@ -89,9 +89,12 @@ Contact: joseluis.rojo@urjc.es
 
 INTERACTIVE CAMERA AND DISPLAY SCALES
 The same yaw, pitch and roll apply to M, B and their difference in both views.
-Use the three sliders, or select Enable drag rotation. Mouse drag turns the
-surface, and Shift-drag adds camera roll. On a touch screen, drag with one
-finger to turn, or move and twist two fingers to combine all three rotations.
+Mouse rotation is enabled on arrival. Drag any surface to turn and Shift-drag
+to roll. The three sliders remain available. On touch screens, select Enable
+rotation in the toolbar beside the plots, then drag with one finger to turn
+or move and twist two fingers to combine all three rotations. The plot toolbar
+stays visible while scrolling through the fields and shares its state with
+the controls above. Both toolbars include Reset view.
 Turn drag rotation off to restore normal vertical scrolling over the plots.
 Reset view restores yaw -20, pitch 28 and roll 0 degrees. It changes neither
 the selected field nor time, metrics or playback state. Camera changes redraw

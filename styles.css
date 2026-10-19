@@ -887,3 +887,8 @@ footer details p{
 .camera-controls{padding:16px 14px}.camera-angles{gap:12px;grid-template-columns:1fr}
 [data-field-view="oblique"] canvas{aspect-ratio:1.45}
 }
+/* Keep rotation controls beside the surfaces while scrolling through the panels. */
+.plot-camera-actions{position:sticky;top:8px;z-index:5;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 2px 7px #10263b0c;align-items:center}
+.plot-camera-actions button{font-size:13px;padding:8px 12px}
+.plot-camera-actions [data-camera-status]{font-size:12px;color:var(--muted);flex:1 1 220px}
+[data-field-view="top"] .plot-camera-actions{display:none}

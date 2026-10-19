@@ -147,7 +147,8 @@
     $("study-play").textContent=$("study-sampling").value==="replay"?"Play modal solution":"Play saved frames";$("study-play").setAttribute("aria-pressed","false");
     $("mode-play").textContent="Play decay";$("mode-play").setAttribute("aria-pressed","false");
   }
-  var cameraFrame=null,dragEnabled=false,pointers=new Map(),gestureBase=null;
+  var cameraFrame=null,coarsePointer=window.matchMedia("(pointer: coarse)").matches;
+  var dragEnabled=!coarsePointer,pointers=new Map(),gestureBase=null;
   function syncCamera(){
     var c=surface.getCamera();
     ["yaw","pitch","roll"].forEach(function(k){$("camera-"+k).value=Math.round(c[k]);$("camera-"+k+"-value").textContent=Math.round(c[k])+"°";});
@@ -162,11 +163,22 @@
   ["yaw","pitch","roll"].forEach(function(k){
     $("camera-"+k).addEventListener("input",function(){var next={};next[k]=+this.value;surface.setCamera(next);redrawCamera();});
   });
-  $("camera-reset").addEventListener("click",function(){surface.resetCamera();redrawCamera();});
-  $("camera-drag").addEventListener("click",function(){
-    dragEnabled=!dragEnabled;document.body.dataset.cameraDrag=String(dragEnabled);
-    this.setAttribute("aria-pressed",String(dragEnabled));this.textContent=dragEnabled?"Turn drag rotation off":"Enable drag rotation";
+  function setDragEnabled(enabled){
+    dragEnabled=enabled;document.body.dataset.cameraDrag=String(dragEnabled);
+    document.querySelectorAll('[data-camera-action="toggle"]').forEach(function(button){
+      button.setAttribute("aria-pressed",String(dragEnabled));button.textContent=dragEnabled?"Rotation on":"Enable rotation";
+      button.title=dragEnabled?"Turn rotation off to scroll over the plots":"Enable drag rotation";
+    });
+    document.querySelectorAll('[data-camera-status]').forEach(function(label){
+      label.textContent=dragEnabled?(coarsePointer?"Drag to turn. Twist two fingers to roll.":"Drag any surface. Shift-drag to roll."):"Scroll mode. Enable rotation to turn the surfaces.";
+    });
     pointers.clear();gestureBase=null;
+  }
+  document.querySelectorAll('[data-camera-action="reset"]').forEach(function(button){
+    button.addEventListener("click",function(){surface.resetCamera();redrawCamera();});
+  });
+  document.querySelectorAll('[data-camera-action="toggle"]').forEach(function(button){
+    button.addEventListener("click",function(){setDragEnabled(!dragEnabled);});
   });
   function gesture(){
     var a=Array.from(pointers.values());if(!a.length)return null;
@@ -244,5 +256,5 @@
     clearTimeout(resizeTimer);
     resizeTimer=setTimeout(function(){if(active==="study")updateStudy();else updateMode();},120);
   });
-  syncCamera();setStudySampling();updateStudy();updateMode();stop();
+  setDragEnabled(dragEnabled);syncCamera();setStudySampling();updateStudy();updateMode();stop();
 })();

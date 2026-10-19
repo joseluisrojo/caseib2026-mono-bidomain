@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Propagation and a common recovery map · CASEIB 2026</title>
 <meta name="description" content="Explore saved monodomain and bidomain cardiac fields and a closed-form mode example from our CASEIB 2026 study.">
-<link rel="stylesheet" href="styles.css?v=20261019-camera2">
+<link rel="stylesheet" href="styles.css?v=20261019-camera3">
 </head>
 <body data-field-view="oblique">
 <header class="hero">
@@ -34,13 +34,13 @@
 <p id="view-description">Height and colour represent potential. All three surfaces share the camera. The reference grid is at potential zero.</p>
 </div>
 <div class="camera-controls" id="camera-controls" aria-label="Shared surface camera">
-<div class="camera-actions"><button id="camera-drag" aria-pressed="false">Enable drag rotation</button><button id="camera-reset">Reset view</button></div>
+<div class="camera-actions"><button id="camera-drag" data-camera-action="toggle" aria-pressed="false">Enable rotation</button><button id="camera-reset" data-camera-action="reset">Reset view</button></div>
 <div class="camera-angles">
 <label for="camera-yaw">Yaw <output id="camera-yaw-value">−20°</output><input id="camera-yaw" type="range" min="-180" max="180" step="1" value="-20"></label>
 <label for="camera-pitch">Pitch <output id="camera-pitch-value">28°</output><input id="camera-pitch" type="range" min="-180" max="180" step="1" value="28"></label>
 <label for="camera-roll">Roll <output id="camera-roll-value">0°</output><input id="camera-roll" type="range" min="-180" max="180" step="1" value="0"></label>
 </div>
-<p id="camera-help">Use the sliders, or enable drag rotation on any surface. Drag to turn, Shift-drag to roll. On touch screens, drag to turn and twist two fingers to roll. Turn rotation off to scroll over a plot. Playback continues while rotating.</p>
+<p id="camera-help">With a mouse, drag any surface to turn and Shift-drag to roll. On touch screens, enable rotation beside the plots, then drag to turn and twist two fingers to roll. Turn rotation off to scroll over a plot. Playback continues while rotating.</p>
 </div>
 
 <section id="study" aria-labelledby="study-heading">
@@ -56,6 +56,7 @@
 <p class="time-note" id="study-time-note">The saved modal solution is evaluated every 0.05 ms. Playback is slowed for viewing.</p>
 <div class="analysis-grid"><div>
 <div class="scale-key"><div><span>M/B shared scale <b id="study-abs-scale"></b></span><i class="gradient sequential" id="study-abs-gradient"></i></div><div><span>Difference scale <b id="study-diff-scale"></b></span><i class="gradient diverging"></i></div></div>
+<div class="camera-actions plot-camera-actions" aria-label="Study surface rotation"><button data-camera-action="toggle" aria-pressed="false">Enable rotation</button><button data-camera-action="reset">Reset view</button><span data-camera-status></span></div>
 <div class="map-stack" id="study-maps">
 <figure><figcaption><span>A</span> Monodomain <small id="study-unit">% of initial membrane-voltage peak</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="study-m" role="img" aria-label="Monodomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
 <figure><figcaption><span>B</span> Bidomain</figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="study-b" role="img" aria-label="Bidomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
@@ -85,6 +86,7 @@
 <div class="analysis-grid"><div>
 <div class="explanation" id="mode-explanation"></div>
 <div class="scale-key"><div><span>M/B shared scale <b id="mode-abs-scale"></b></span><i class="gradient sequential" id="mode-abs-gradient"></i></div><div><span>Difference scale <b id="mode-diff-scale"></b></span><i class="gradient diverging"></i></div></div>
+<div class="camera-actions plot-camera-actions" aria-label="Teaching surface rotation"><button data-camera-action="toggle" aria-pressed="false">Enable rotation</button><button data-camera-action="reset">Reset view</button><span data-camera-status></span></div>
 <div class="map-stack">
 <figure><figcaption><span>A</span> Monodomain <small>mV</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="mode-m" role="img" aria-label="Teaching monodomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
 <figure><figcaption><span>B</span> Bidomain <small>mV</small></figcaption><div class="map-axis"><em><span class="axis-title-z">z (mm)</span><span class="tick-z-top">2</span><span class="tick-z-bottom">0</span></em><canvas id="mode-b" role="img" aria-label="Teaching bidomain field"></canvas></div><div class="x-axis"><span>0</span><span>6</span><span>12</span><span class="axis-title-x">Fibre direction x (mm)</span></div></figure>
@@ -109,5 +111,5 @@
 </footer>
 </main>
 <noscript>This interactive companion needs JavaScript. The printed poster contains the question, comparison, results and limitations.</noscript>
-<script src="data/study.js"></script><script src="model.js"></script><script src="data/modal_basis.js"></script><script src="modal-replay.js"></script><script src="surface.js?v=20261019-camera2"></script><script src="app.js?v=20261019-camera2"></script>
+<script src="data/study.js"></script><script src="model.js"></script><script src="data/modal_basis.js"></script><script src="modal-replay.js"></script><script src="surface.js?v=20261019-camera3"></script><script src="app.js?v=20261019-camera3"></script>
 </body></html>
